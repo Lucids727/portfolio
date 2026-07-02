@@ -7,8 +7,8 @@ Then in `index.html`, inside the `CONFIG` object near the top of the
 `<script>` tag, update:
 
 ```js
-backgroundImage: "assets/background.jpg",
-musicFile: "assets/music.mp3",
+backgroundImage: "background.jpg",
+musicFile: "music.mp3",
 ```
 
 Don't use copyrighted images/music you don't have rights to if the site
