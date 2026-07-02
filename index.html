@@ -493,15 +493,59 @@
       justify-content: center;
       background: var(--panel);
       border: 1px solid var(--panel-border);
-      color: var(--text-primary);
-      text-decoration: none;
-      transition: transform .15s ease, border-color .15s ease, color .15s ease;
+      position: relative; /* Needed for the tooltip */
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
     }
 
+    /* Styles the actual image files you downloaded */
+    .social-icon {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+      /* Makes them a uniform, sleek silver/transparent to match your theme */
+      filter: grayscale(100%) opacity(0.6);
+      transition: filter 0.3s ease;
+    }
+
+    /* Premium Glow on Hover */
     .socials a:hover { 
-      transform: translateY(-3px); 
+      transform: translateY(-4px); 
       border-color: var(--accent-bright); 
-      color: var(--accent-bright); 
+      box-shadow: 0 0 14px rgba(230, 57, 79, 0.5), 0 0 4px rgba(230, 57, 79, 0.3);
+    }
+
+    /* Drops the greyscale filter so the original logo colors burst through! */
+    .socials a:hover .social-icon {
+      filter: grayscale(0%) opacity(1);
+    }
+
+    /* The Hidden Username Tooltip */
+    .socials a::after {
+      content: attr(data-username);
+      position: absolute;
+      bottom: 100%; 
+      left: 50%;
+      transform: translate(-50%, 5px);
+      background: rgba(30, 30, 32, 0.9);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 5px 10px;
+      color: var(--text-primary);
+      font-family: -apple-system, sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    /* Shows the Tooltip on Hover */
+    .socials a:hover::after {
+      opacity: 1;
+      transform: translate(-50%, -10px);
     }
 
     .socials a:focus-visible { 
@@ -509,10 +553,26 @@
       outline-offset: 2px; 
     }
 
-    .socials svg { 
-      width: 17px; 
-      height: 17px; 
-      fill: currentColor; 
+    /* The CSS Mask Stencil */
+    .social-stencil {
+      width: 18px; 
+      height: 18px; 
+      /* currentColor means it will be white normally, and automatically turn red on hover! */
+      background-color: currentColor; 
+      
+      /* Tells the browser to use your SVG file as a cutout shape */
+      mask-image: var(--icon-url);
+      mask-size: contain;
+      mask-position: center;
+      mask-repeat: no-repeat;
+      
+      /* Safari support */
+      -webkit-mask-image: var(--icon-url);
+      -webkit-mask-size: contain;
+      -webkit-mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      
+      transition: background-color 0.2s ease;
     }
 
     footer {
@@ -640,7 +700,14 @@
     musicArtist: "Kessoku Band",
     musicCover: "kessoku-cover.jpg",
     discordId: "1137968307350278174",
-    socials: [],
+  socials: [
+    { iconFile: "osu.svg", url: "https://osu.ppy.sh/users/29545751", username: "Lucids", scale: 1 },
+    { iconFile: "youtube.svg", url: "https://www.youtube.com/@lucids727", username: "Lucids", scale: 1 },
+    { iconFile: "roblox.svg", url: "https://www.roblox.com/users/419463355/profile", username: "Lucids_Official", scale: 1.1 }, // Bumped slightly for the tilt
+    { iconFile: "steam.svg", url: "https://steamcommunity.com/id/Lucids-OsuMania/", username: "Lucids", scale: 2 }, // Bumped up significantly!
+    { iconFile: "instagram.svg", url: "https://www.instagram.com/luci.dsofficial/", username: "luci.dsofficial", scale: 1 },
+    { iconFile: "tiktok.svg", url: "https://www.tiktok.com/@lucids727", username: "Lucids", scale: 1 }
+  ],
   };
 
   /* --- Initialization --- */
@@ -704,6 +771,30 @@
   updateClock();
   setInterval(updateClock, 1000);
   timeContainer.hidden = false;
+
+const socialsRow = document.getElementById("socialsRow");
+  
+  CONFIG.socials.forEach((s) => {
+    const a = document.createElement("a");
+    a.href = s.url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.setAttribute("aria-label", s.username);
+    a.setAttribute("data-username", s.username); 
+    
+    const img = document.createElement("img");
+    img.src = s.iconFile; 
+    img.className = "social-icon";
+    img.alt = s.username;
+    
+    // NEW: Apply the custom scale!
+    if (s.scale) {
+      img.style.transform = `scale(${s.scale})`;
+    }
+    
+    a.appendChild(img);
+    socialsRow.appendChild(a);
+  });
 
   /* --- Audio Context --- */
   const audioEl = document.getElementById("bgMusic");
