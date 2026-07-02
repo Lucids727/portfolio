@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lucids</title>
   <style>
     /* --- Design Tokens --- */
@@ -124,6 +124,7 @@
     .enter-screen.hidden .enter-hint {
       opacity: 0; 
       transform: translateY(-10px);
+      animation: none; /* Kills the pulse so opacity 0 actually works! */
     }
 
     @keyframes pulse-text {
@@ -665,8 +666,12 @@
         </div>
         
         <div class="controls">
-          <button class="player-toggle" id="playToggle">▶</button>
-          <button class="player-toggle" id="muteToggle">🔊</button>
+          <button class="player-toggle" id="playToggle" aria-label="Play">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86a1 1 0 0 0-1.5.86z"/></svg>
+          </button>
+          <button class="player-toggle" id="muteToggle" aria-label="Mute">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          </button>
         </div>
       </div>
       <div class="player-bottom">
@@ -825,21 +830,28 @@ const socialsRow = document.getElementById("socialsRow");
   }
 
   /* --- Audio Controls --- */
+  
+  // Clean SVG Icons
+  const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86a1 1 0 0 0-1.5.86z"/></svg>';
+  const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 19c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2s-2 .9-2 2v10c0 1.1.9 2 2 2zm6-12v10c0 1.1.9 2 2 2s2-.9 2-2V7c0-1.1-.9-2-2-2s-2 .9-2 2z"/></svg>';
+  const ICON_VOL = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
+  const ICON_MUTE = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>';
+
   playBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     if (audioEl.paused) { 
       audioEl.play(); 
-      playBtn.textContent = "⏸"; 
+      playBtn.innerHTML = ICON_PAUSE; 
     } else { 
       audioEl.pause(); 
-      playBtn.textContent = "▶"; 
+      playBtn.innerHTML = ICON_PLAY; 
     }
   });
 
   muteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     audioEl.muted = !audioEl.muted;
-    muteBtn.textContent = audioEl.muted ? "🔇" : "🔊";
+    muteBtn.innerHTML = audioEl.muted ? ICON_MUTE : ICON_VOL;
   });
 
   audioEl.addEventListener("timeupdate", () => {
@@ -862,7 +874,7 @@ const socialsRow = document.getElementById("socialsRow");
     if (CONFIG.musicFile) {
       playerBlock.hidden = false;
       audioEl.play().catch(e => console.warn(e));
-      playBtn.textContent = "⏸";
+      playBtn.innerHTML = ICON_PAUSE;
     }
     
     const enterScreen = document.getElementById("enterScreen");
@@ -878,7 +890,13 @@ const socialsRow = document.getElementById("socialsRow");
     
     enterScreen.classList.add("hidden");
     document.querySelector("main").classList.add("visible");
-    setTimeout(() => { enterAvatar.style.display = "none"; }, 600);
+    
+    // Completely remove the overlay from the browser's memory after it fades out
+    setTimeout(() => { 
+      enterAvatar.style.display = "none"; 
+      enterScreen.style.display = "none"; 
+    }, 600);
+    
     document.removeEventListener("click", startOnFirstInteraction);
   }
   document.addEventListener("click", startOnFirstInteraction);
